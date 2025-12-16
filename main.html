@@ -63,6 +63,7 @@
         <button data-page="clients"><span class="ico">👥</span>Клиенты</button>
         <button data-page="tasks"><span class="ico">🗂️</span>Задачи</button>
         <button data-page="deals"><span class="ico">💼</span>Сделки</button>
+        <button data-page="employees"><span class="ico">👷</span>Работники</button>
         <button data-page="reports"><span class="ico">📊</span>Отчёты</button>
         <button data-page="settings"><span class="ico">⚙️</span>Настройки</button>
       </nav>
@@ -195,6 +196,28 @@
             <div class="stage" data-stage="negotiation"><h4>Negotiation</h4><div class="list-stage" id="stage-negotiation"></div></div>
             <div class="stage" data-stage="closed"><h4>Closed</h4><div class="list-stage" id="stage-closed"></div></div>
           </div>
+        </div>
+      </section>
+
+      <!-- Employees -->
+      <section id="page-employees" style="display:none">
+        <div class="panel">
+          <h3>Работники</h3>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button class="btn" id="addEmployee">+ Добавить работника</button>
+          </div>
+          <table style="margin-top:12px">
+            <thead>
+              <tr>
+                <th>Имя</th>
+                <th>Должность</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="employeesBody"></tbody>
+          </table>
         </div>
       </section>
 

@@ -13,6 +13,10 @@ const defaultData = {
     {id:3,name:'Айшат Т.',company:'KazFarm',contact:'aishat@kazfarm.kz',last:'2025-10-01',status:'Активный',notes:'Нужна поддержка 24/7'}
   ],
   tasks:[{id:1,title:'Позвонить Аружан',due:'2025-10-15',assignee:'Нургали',status:'В прогрессе'}],
+  employees:[
+    {id:1,name:'Нургали С.',position:'Менеджер',email:'nurgali@company.kz',phone:'+7 777 123 4567'},
+    {id:2,name:'Айдос К.',position:'Разработчик',email:'aidos@company.kz',phone:'+7 777 234 5678'}
+  ],
   deals:{leads:[],negotiation:[],closed:[]},
   activities:[],
   settings:{theme:'light',role:'Admin',emailNotif:false}
@@ -202,6 +206,20 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
       tbody.appendChild(tr);
     });
     attachTaskDeleteButtons();
+    renderAssigneeSelect();
+  }
+
+  function renderAssigneeSelect(){
+    const select = document.getElementById('taskAssignee');
+    if(!select) return;
+    const assignees = [...new Set(store.tasks.map(t=>t.assignee).filter(Boolean))];
+    select.innerHTML = '<option value="">Все исполнители</option>';
+    assignees.forEach(a=>{
+      const opt = document.createElement('option');
+      opt.value = a;
+      opt.textContent = a;
+      select.appendChild(opt);
+    });
   }
 
   function attachTaskDeleteButtons(){
@@ -288,6 +306,71 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
     save(store);
   });
 
+  // --- Работники ---
+  function renderEmployees(){
+    const tbody = document.getElementById('employeesBody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    store.employees = store.employees || [];
+    store.employees.forEach(e=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${e.name}</td>
+        <td>${e.position}</td>
+        <td>${e.email}</td>
+        <td>${e.phone}</td>
+        <td>
+          <button data-id="${e.id}" class="btn ghost editEmployee">Редакт</button>
+          <button data-id="${e.id}" class="btn ghost deleteEmployee" style="color:#dc2626;">Удалить</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+    attachEmployeeButtons();
+  }
+
+  function attachEmployeeButtons(){
+    document.querySelectorAll('.editEmployee').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const id = Number(btn.getAttribute('data-id'));
+        const emp = store.employees.find(e=>e.id===id);
+        const name = prompt("Имя:", emp.name);
+        if(!name) return;
+        const position = prompt("Должность:", emp.position);
+        const email = prompt("Email:", emp.email);
+        const phone = prompt("Телефон:", emp.phone);
+        emp.name = name; emp.position = position; emp.email = email; emp.phone = phone;
+        store.activities.push(`Работник обновлён: ${name}`);
+        save(store);
+        refreshAll();
+      });
+    });
+    document.querySelectorAll('.deleteEmployee').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const id = Number(btn.getAttribute('data-id'));
+        if(confirm("Удалить работника?")){
+          store.employees = store.employees.filter(e=>e.id!==id);
+          store.activities.push(`Работник удалён (ID: ${id})`);
+          save(store);
+          refreshAll();
+        }
+      });
+    });
+  }
+
+  document.getElementById('addEmployee').addEventListener('click',()=>{
+    const name = prompt("Имя работника:");
+    if(!name) return;
+    const position = prompt("Должность:");
+    const email = prompt("Email:");
+    const phone = prompt("Телефон:");
+    store.employees = store.employees || [];
+    store.employees.push({id:Date.now(), name, position, email, phone});
+    store.activities.push(`Добавлен работник: ${name}`);
+    save(store);
+    refreshAll();
+  });
+
   // --- Обновление интерфейса ---
   function refreshAll(){
     refreshKPIs();
@@ -298,6 +381,7 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
     renderSplitList();
     renderTasks();
     renderDeals();
+    renderEmployees();
   }
 
   document.getElementById('globalSearch').addEventListener('input',e=>{
