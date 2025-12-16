@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ADAI-CRM — Login / Register</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div class="container" id="authBox">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+      <div class="lang" onclick="toggleLang()">RU | KZ | EN</div>
+      <div class="theme-toggle" onclick="toggleDark()"></div>
+    </div>
+
+    <div class="logo">ADAI-CRM</div>
+
+    <!-- LOGIN -->
+    <div id="loginForm" class="fade">
+      <h2 data-i18n="login">Авторизация</h2>
+
+      <label data-i18n="email">Email</label>
+      <div class="input-box">
+        <input type="email" data-i18n-placeholder="enter_email" placeholder="Введите email">
+      </div>
+
+      <label data-i18n="password">Пароль</label>
+      <div class="input-box">
+        <input type="password" data-i18n-placeholder="enter_password" placeholder="Введите пароль">
+      </div>
+
+      <button class="btn-primary" onclick="handleLogin()" data-i18n="login">
+        Войти
+      </button>
+
+      <button class="btn-secondary">Google</button>
+
+      <div class="switch">
+        <span data-i18n="no_account">Нет аккаунта?</span>
+        <a href="#" onclick="showRegister()" data-i18n="register">Зарегистрироваться</a>
+      </div>
+    </div>
+
+    <!-- REGISTER STEP 1 -->
+    <div id="registerForm" class="fade" style="display:none;">
+      <h2 data-i18n="register">Регистрация</h2>
+
+      <label data-i18n="business_name">Название бизнеса</label>
+      <div class="input-box">
+        <input type="text" data-i18n-placeholder="business_placeholder" placeholder="Например: moi magaz">
+      </div>
+
+      <label data-i18n="email">Email</label>
+      <div class="input-box">
+        <input type="email" data-i18n-placeholder="enter_email" placeholder="Введите email">
+      </div>
+
+      <label data-i18n="password">Пароль</label>
+      <div class="input-box">
+        <input type="password" data-i18n-placeholder="create_password" placeholder="Создайте пароль">
+      </div>
+
+      <button class="btn-primary" onclick="nextStep()" data-i18n="next">
+        Далее
+      </button>
+
+      <div class="switch">
+        <span data-i18n="have_account">Уже есть аккаунт?</span>
+        <a href="#" onclick="showLogin()" data-i18n="login">Войти</a>
+      </div>
+    </div>
+
+    <!-- REGISTER STEP 2 -->
+    <div id="registerStep2" class="fade" style="display:none;">
+      <h2 data-i18n="register_step2">Регистрация — Шаг 2</h2>
+
+      <label data-i18n="iin">ИИН</label>
+      <div class="input-box">
+        <input type="text" data-i18n-placeholder="enter_iin" placeholder="Введите ИИН">
+      </div>
+
+      <label data-i18n="business_format">Формат бизнеса</label>
+      <div class="input-box">
+        <select>
+          <option data-i18n="ip">ИП</option>
+          <option data-i18n="too">ТОО</option>
+          <option data-i18n="freelancer">Фрилансер</option>
+          <option data-i18n="other">Другое</option>
+        </select>
+      </div>
+
+      <label data-i18n="address">Физический адрес</label>
+      <div class="input-box">
+        <input type="text" data-i18n-placeholder="enter_address" placeholder="Введите адрес">
+      </div>
+
+      <label data-i18n="phone">Номер телефона</label>
+      <div class="input-box">
+        <input type="tel" placeholder="+7 (___) ___-__-__">
+      </div>
+
+      <label data-i18n="site">Сайт / Instagram</label>
+      <div class="input-box">
+        <input type="text" data-i18n-placeholder="site_placeholder" placeholder="Например: @moi.magaz">
+      </div>
+
+      <button class="btn-primary" onclick="handleFinishRegister()" data-i18n="finish_register">
+        Завершить регистрацию
+      </button>
+
+      <div class="switch">
+        <a href="#" onclick="showLogin()" data-i18n="back_to_login">Назад к авторизации</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="script.js"></script>
+  <script src="lang.js"></script>
+</body>
+</html>

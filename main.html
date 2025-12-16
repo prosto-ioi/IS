@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ADAI-CRM — Corporate Edition</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="main_style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="brand">
+      <div class="logo">AC</div>
+      <div>
+        <div class="title">ADAI-CRM</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.75)"></div>
+      </div>
+    </div>
+
+    <div class="top-controls">
+      <div class="searchbar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="opacity:0.9">
+          <path d="M21 21l-4.35-4.35" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="11" cy="11" r="6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></circle>
+        </svg>
+        <input id="globalSearch" placeholder="Поиск клиента, компании или сделки" />
+      </div>
+
+      <button class="notif-btn" id="btnNotify">🔔 Уведомления</button>
+      <div id="notifPopup" class="notif-popup" style="display:none;">
+        <h4>Уведомления</h4>
+        <div id="notifList" class="notif-list"></div>
+        <button id="clearNotif" class="btn ghost" style="margin-top:8px;">Очистить</button>
+      </div>
+
+      <!-- Селектор языка -->
+      <div class="lang-selector" style="margin-right:16px;">
+        <select id="languageSelect">
+          <option value="ru" selected>Русский</option>
+          <option value="en">English</option>
+          <option value="kz">Қазақша</option>
+        </select>
+      </div>
+
+      <div class="user-chip">
+        <div style="text-align:right">
+          <div style="font-weight:700">Господин</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.8)">Администратор</div>
+          <button class="logout-btn" onclick="logoutUser()">🚪 Выйти</button>
+        </div>
+        <div class="avatar">AP</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <aside class="sidebar">
+      <nav class="menu">
+        <button class="active" data-page="dashboard"><span class="ico">🏢</span>Панель</button>
+        <button data-page="clients"><span class="ico">👥</span>Клиенты</button>
+        <button data-page="tasks"><span class="ico">🗂️</span>Задачи</button>
+        <button data-page="deals"><span class="ico">💼</span>Сделки</button>
+        <button data-page="reports"><span class="ico">📊</span>Отчёты</button>
+        <button data-page="settings"><span class="ico">⚙️</span>Настройки</button>
+      </nav>
+      <div class="meta">ADAI-CRM — корпоративная </div>
+    </aside>
+
+    <main class="content">
+      <!-- Dashboard -->
+      <section id="page-dashboard">
+        <div class="top-kpis">
+          <div class="kpi-card">
+            <div class="kpi-left">
+              <div class="kpi-value" id="kpiClients">0</div>
+              <div class="kpi-label">Всего клиентов</div>
+            </div>
+            <div class="kpi-icon">📇</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-left">
+              <div class="kpi-value" id="kpiTasks">0</div>
+              <div class="kpi-label">Активных задач</div>
+            </div>
+            <div class="kpi-icon">🗓️</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-left">
+              <div class="kpi-value" id="kpiRevenue">$0</div>
+              <div class="kpi-label">Месячный доход</div>
+            </div>
+            <div class="kpi-icon">💰</div>
+          </div>
+        </div>
+
+        <div class="layout-main">
+          <div class="panel">
+            <h3>Последние взаимодействия</h3>
+            <div class="activity-list" id="activityList"></div>
+          </div>
+
+          <div class="panel calendar-panel">
+            <h3>График продаж (6 мес.)</h3>
+            <canvas id="salesChart" style="width:100%;height:220px;margin-top:8px"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Clients -->
+      <section id="page-clients" style="display:none">
+        <div class="panel">
+          <div class="controls">
+            <div class="left">
+              <button class="btn" id="addClient">+ Добавить клиента</button>
+              <div class="view-toggle">
+                <button class="ghost" data-view="table">Таблица</button>
+                <button class="ghost" data-view="cards">Карточки</button>
+                <button class="ghost" data-view="split">Split</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input id="clientFilter" placeholder="Фильтр по статусу или имени" style="padding:8px;border-radius:10px;border:1px solid #eef2f6" />
+              <input type="file" id="csvImport" accept="text/csv" />
+              <button class="ghost" id="exportCsv">Экспорт CSV</button>
+            </div>
+          </div>
+
+          <div id="view-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Клиент</th>
+                  <th>Компания</th>
+                  <th>Контакт</th>
+                  <th>Последнее</th>
+                  <th>Статус</th>
+                  <th>Действия</th>
+                </tr>
+              </thead>
+              <tbody id="clientsTableBody"></tbody>
+            </table>
+          </div>
+
+          <div id="view-cards" style="display:none;margin-top:12px">
+            <div class="cards-grid" id="clientsCards"></div>
+          </div>
+
+          <div id="view-split" style="display:none;margin-top:12px">
+            <div class="split">
+              <div class="panel list-panel" id="splitList"></div>
+              <div class="panel detail-panel" id="splitDetail"><em>Выберите клиента слева, чтобы увидеть детали.</em></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tasks -->
+      <section id="page-tasks" style="display:none">
+        <div class="panel">
+          <h3>Задачи</h3>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <button class="btn" id="addTask">+ Добавить задачу</button>
+            <select id="taskAssignee"></select>
+          </div>
+          <table style="margin-top:12px">
+            <thead>
+              <tr>
+                <th>Задача</th>
+                <th>Срок</th>
+                <th>Исполнитель</th>
+                <th>Статус</th>
+              </tr>
+            </thead>
+            <tbody id="tasksBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Deals -->
+      <section id="page-deals" style="display:none">
+        <div class="panel">
+          <h3>Сделки — Воронка</h3>
+          <div style="display:flex;gap:8px;margin-bottom:10px">
+            <input id="dealName" placeholder="Название сделки" style="padding:8px;border-radius:8px;border:1px solid #eef2f6" />
+            <input id="dealValue" placeholder="Сумма" style="padding:8px;border-radius:8px;border:1px solid #eef2f6;width:120px" />
+            <button class="btn" id="addDeal">Добавить сделку</button>
+          </div>
+          <div class="pipeline">
+            <div class="stage" data-stage="leads"><h4>Leads</h4><div class="list-stage" id="stage-leads"></div></div>
+            <div class="stage" data-stage="negotiation"><h4>Negotiation</h4><div class="list-stage" id="stage-negotiation"></div></div>
+            <div class="stage" data-stage="closed"><h4>Closed</h4><div class="list-stage" id="stage-closed"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reports -->
+      <section id="page-reports" style="display:none">
+        <div class="panel">
+          <h3>Отчёты</h3>
+          <p style="color:var(--muted)">Графики и экспорт (демо)</p>
+          <div style="height:260px;border-radius:8px;background:transparent;margin-top:10px;display:flex;align-items:center;justify-content:center;color:var(--muted)">
+            <canvas id="reportChart" style="width:100%;height:220px"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Settings -->
+      <section id="page-settings" style="display:none">
+        <div class="panel">
+          <h3>Настройки</h3>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+            <label><input type="checkbox" id="emailNotif" /> Включить e-mail уведомления</label>
+            <label style="margin-left:12px">Роль: <select id="roleSelect"><option>Admin</option><option>Manager</option><option>User</option></select></label>
+          </div>
+          <div style="margin-top:12px">API интеграция: <input id="apiKey" placeholder="API Key..." style="padding:6px;border-radius:6px;border:1px solid #eef2f6" /></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+ 
+  <div id="modalRoot" style="display:none"></div>
+  <script src="main_script.js"></script>
+</body>
+</html>
