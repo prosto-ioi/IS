@@ -247,6 +247,70 @@
     </main>
   </div>
  
+  <!-- Модальное окно для клиента -->
+  <div id="clientModal" class="modal" style="display:none">
+    <div class="modal-content">
+      <h3 id="clientModalTitle">Добавить клиента</h3>
+      <input type="hidden" id="clientEditId" />
+      <label>Имя клиента</label>
+      <input type="text" id="clientName" placeholder="Имя" />
+      <label>Компания</label>
+      <input type="text" id="clientCompany" placeholder="Компания" />
+      <label>Контакт</label>
+      <input type="text" id="clientContact" placeholder="Email или телефон" />
+      <label>Статус</label>
+      <input type="text" id="clientStatus" placeholder="Лид, Активный..." value="Лид" />
+      <div class="modal-buttons">
+        <button class="btn" id="clientModalSave">Сохранить</button>
+        <button class="btn ghost" id="clientModalCancel">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно для задачи -->
+  <div id="taskModal" class="modal" style="display:none">
+    <div class="modal-content">
+      <h3 id="taskModalTitle">Добавить задачу</h3>
+      <input type="hidden" id="taskEditId" />
+      <label>Название задачи</label>
+      <input type="text" id="taskTitle" placeholder="Название" />
+      <label>Срок (YYYY-MM-DD)</label>
+      <input type="date" id="taskDue" />
+      <label>Исполнитель</label>
+      <input type="text" id="taskAssigneeInput" placeholder="Исполнитель" />
+      <label>Статус</label>
+      <select id="taskStatus">
+        <option value="Запланировано">Запланировано</option>
+        <option value="В прогрессе">В прогрессе</option>
+        <option value="Завершено">Завершено</option>
+      </select>
+      <div class="modal-buttons">
+        <button class="btn" id="taskModalSave">Сохранить</button>
+        <button class="btn ghost" id="taskModalCancel">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно для работника -->
+  <div id="employeeModal" class="modal" style="display:none">
+    <div class="modal-content">
+      <h3 id="employeeModalTitle">Добавить работника</h3>
+      <input type="hidden" id="employeeEditId" />
+      <label>Имя</label>
+      <input type="text" id="employeeName" placeholder="Имя" />
+      <label>Должность</label>
+      <input type="text" id="employeePosition" placeholder="Должность" />
+      <label>Email</label>
+      <input type="email" id="employeeEmail" placeholder="Email" />
+      <label>Телефон</label>
+      <input type="tel" id="employeePhone" placeholder="Телефон" />
+      <div class="modal-buttons">
+        <button class="btn" id="employeeModalSave">Сохранить</button>
+        <button class="btn ghost" id="employeeModalCancel">Отмена</button>
+      </div>
+    </div>
+  </div>
+
   <div id="modalRoot" style="display:none"></div>
   <script src="main_script.js"></script>
 </body>

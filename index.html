@@ -12,7 +12,13 @@
 
     <!-- Top bar -->
     <div class="top-bar">
-      <div class="lang" onclick="toggleLang()">RU | KZ | EN</div>
+      <div class="lang-selector">
+        <select id="langSelect" onchange="applyLanguage(this.value)">
+          <option value="ru">🇷🇺 Русский</option>
+          <option value="kz">🇰🇿 Қазақша</option>
+          <option value="en">🇬🇧 English</option>
+        </select>
+      </div>
       <div class="theme-toggle" onclick="toggleDark()"></div>
     </div>
 

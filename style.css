@@ -104,6 +104,25 @@ body.dark .btn-secondary { background:#334155; color:#e2e8f0; }
 .lang { font-size:14px; cursor:pointer; opacity:0.8; }
 .lang:hover { opacity:1; }
 
+.lang-selector select {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #d1d6df;
+  background: rgba(255,255,255,0.9);
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.lang-selector select:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+body.dark .lang-selector select {
+  background: #1e293b;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
 .theme-toggle {
   width:40px; height:20px; border-radius:20px;
   background:#d1d5db; position:relative;

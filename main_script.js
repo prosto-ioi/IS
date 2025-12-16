@@ -103,15 +103,13 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
   document.querySelectorAll('.editClient').forEach(b=>b.addEventListener('click',e=>{const id=Number(b.getAttribute('data-id'));editClient(id);})); attachDeleteButtons();}
   function editClient(id){
     const client = store.clients.find(c=>c.id===id);
-    const name = prompt("Имя клиента:", client.name);
-    if(!name) return;
-    const company = prompt("Компания:", client.company);
-    const contact = prompt("Контакт:", client.contact);
-    const status = prompt("Статус:", client.status);
-    client.name=name; client.company=company; client.contact=contact; client.status=status;
-    store.activities.push(`Клиент обновлён: ${client.name}`);
-    save(store);
-    refreshAll();
+    document.getElementById('clientEditId').value = id;
+    document.getElementById('clientName').value = client.name;
+    document.getElementById('clientCompany').value = client.company;
+    document.getElementById('clientContact').value = client.contact;
+    document.getElementById('clientStatus').value = client.status;
+    document.getElementById('clientModalTitle').textContent = 'Редактировать клиента';
+    document.getElementById('clientModal').style.display = 'flex';
   }
 
   function attachDeleteButtons(){
@@ -131,17 +129,39 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
 
   // --- Добавление клиента ---
   document.getElementById('addClient').addEventListener('click',()=>{
-    const name = prompt("Имя клиента:");
-    if(!name) return;
-    const company = prompt("Компания:");
-    const contact = prompt("Контакт:");
-    const status = prompt("Статус (например: Лид, Активный):","Лид");
-    const newClient = {id:Date.now(),name,company,contact,status,last:new Date().toISOString().slice(0,10),notes:''};
-    store.clients.push(newClient);
-    store.activities.push(`Добавлен новый клиент: ${name}`);
+    document.getElementById('clientEditId').value = '';
+    document.getElementById('clientName').value = '';
+    document.getElementById('clientCompany').value = '';
+    document.getElementById('clientContact').value = '';
+    document.getElementById('clientStatus').value = 'Лид';
+    document.getElementById('clientModalTitle').textContent = 'Добавить клиента';
+    document.getElementById('clientModal').style.display = 'flex';
+  });
+
+  document.getElementById('clientModalSave').addEventListener('click',()=>{
+    const id = document.getElementById('clientEditId').value;
+    const name = document.getElementById('clientName').value.trim();
+    const company = document.getElementById('clientCompany').value.trim();
+    const contact = document.getElementById('clientContact').value.trim();
+    const status = document.getElementById('clientStatus').value.trim();
+    if(!name) return alert('Введите имя клиента');
+    if(id) {
+      const client = store.clients.find(c=>c.id===Number(id));
+      client.name = name; client.company = company; client.contact = contact; client.status = status;
+      store.activities.push(`Клиент обновлён: ${name}`);
+    } else {
+      const newClient = {id:Date.now(),name,company,contact,status,last:new Date().toISOString().slice(0,10),notes:''};
+      store.clients.push(newClient);
+      store.activities.push(`Добавлен новый клиент: ${name}`);
+      addNotif(`Добавлен новый клиент: ${name}`);
+    }
     save(store);
-    addNotif(`Добавлен новый клиент: ${name}`);
     refreshAll();
+    document.getElementById('clientModal').style.display = 'none';
+  });
+
+  document.getElementById('clientModalCancel').addEventListener('click',()=>{
+    document.getElementById('clientModal').style.display = 'none';
   });
 
   // --- Фильтрация клиентов ---
@@ -201,11 +221,14 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
   <td>${t.due}</td>
   <td>${t.assignee}</td>
   <td>${t.status}</td>
-  <td><button data-id="${t.id}" class="btn ghost deleteTask" style="color:#dc2626;">Удалить</button></td>
+  <td>
+    <button data-id="${t.id}" class="btn ghost editTask">Редакт</button>
+    <button data-id="${t.id}" class="btn ghost deleteTask" style="color:#dc2626;">Удалить</button>
+  </td>
 `;
       tbody.appendChild(tr);
     });
-    attachTaskDeleteButtons();
+    attachTaskButtons();
     renderAssigneeSelect();
   }
 
@@ -222,7 +245,20 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
     });
   }
 
-  function attachTaskDeleteButtons(){
+  function attachTaskButtons(){
+    document.querySelectorAll('.editTask').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const id = Number(btn.getAttribute('data-id'));
+        const task = store.tasks.find(t=>t.id===id);
+        document.getElementById('taskEditId').value = id;
+        document.getElementById('taskTitle').value = task.title;
+        document.getElementById('taskDue').value = task.due;
+        document.getElementById('taskAssigneeInput').value = task.assignee;
+        document.getElementById('taskStatus').value = task.status;
+        document.getElementById('taskModalTitle').textContent = 'Редактировать задачу';
+        document.getElementById('taskModal').style.display = 'flex';
+      });
+    });
     document.querySelectorAll('.deleteTask').forEach(btn=>{
       btn.addEventListener('click',()=>{
         const id = Number(btn.getAttribute('data-id'));
@@ -239,14 +275,37 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
   
 
   document.getElementById('addTask').addEventListener('click',()=>{
-    const title=prompt("Название задачи:");
-    if(!title) return;
-    const due=prompt("Срок (YYYY-MM-DD):",new Date().toISOString().slice(0,10));
-    const assignee=prompt("Исполнитель:","Нургали");
-    store.tasks.push({id:Date.now(),title,due,assignee,status:"Запланировано"});
-    store.activities.push(`Добавлена задача: ${title}`);
+    document.getElementById('taskEditId').value = '';
+    document.getElementById('taskTitle').value = '';
+    document.getElementById('taskDue').value = new Date().toISOString().slice(0,10);
+    document.getElementById('taskAssigneeInput').value = '';
+    document.getElementById('taskStatus').value = 'Запланировано';
+    document.getElementById('taskModalTitle').textContent = 'Добавить задачу';
+    document.getElementById('taskModal').style.display = 'flex';
+  });
+
+  document.getElementById('taskModalSave').addEventListener('click',()=>{
+    const id = document.getElementById('taskEditId').value;
+    const title = document.getElementById('taskTitle').value.trim();
+    const due = document.getElementById('taskDue').value;
+    const assignee = document.getElementById('taskAssigneeInput').value.trim();
+    const status = document.getElementById('taskStatus').value;
+    if(!title) return alert('Введите название задачи');
+    if(id) {
+      const task = store.tasks.find(t=>t.id===Number(id));
+      task.title = title; task.due = due; task.assignee = assignee; task.status = status;
+      store.activities.push(`Задача обновлена: ${title}`);
+    } else {
+      store.tasks.push({id:Date.now(),title,due,assignee,status});
+      store.activities.push(`Добавлена задача: ${title}`);
+    }
     save(store);
     refreshAll();
+    document.getElementById('taskModal').style.display = 'none';
+  });
+
+  document.getElementById('taskModalCancel').addEventListener('click',()=>{
+    document.getElementById('taskModal').style.display = 'none';
   });
 
   // --- Воронка сделок ---
@@ -334,15 +393,13 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
       btn.addEventListener('click',()=>{
         const id = Number(btn.getAttribute('data-id'));
         const emp = store.employees.find(e=>e.id===id);
-        const name = prompt("Имя:", emp.name);
-        if(!name) return;
-        const position = prompt("Должность:", emp.position);
-        const email = prompt("Email:", emp.email);
-        const phone = prompt("Телефон:", emp.phone);
-        emp.name = name; emp.position = position; emp.email = email; emp.phone = phone;
-        store.activities.push(`Работник обновлён: ${name}`);
-        save(store);
-        refreshAll();
+        document.getElementById('employeeEditId').value = id;
+        document.getElementById('employeeName').value = emp.name;
+        document.getElementById('employeePosition').value = emp.position;
+        document.getElementById('employeeEmail').value = emp.email;
+        document.getElementById('employeePhone').value = emp.phone;
+        document.getElementById('employeeModalTitle').textContent = 'Редактировать работника';
+        document.getElementById('employeeModal').style.display = 'flex';
       });
     });
     document.querySelectorAll('.deleteEmployee').forEach(btn=>{
@@ -359,16 +416,38 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
   }
 
   document.getElementById('addEmployee').addEventListener('click',()=>{
-    const name = prompt("Имя работника:");
-    if(!name) return;
-    const position = prompt("Должность:");
-    const email = prompt("Email:");
-    const phone = prompt("Телефон:");
+    document.getElementById('employeeEditId').value = '';
+    document.getElementById('employeeName').value = '';
+    document.getElementById('employeePosition').value = '';
+    document.getElementById('employeeEmail').value = '';
+    document.getElementById('employeePhone').value = '';
+    document.getElementById('employeeModalTitle').textContent = 'Добавить работника';
+    document.getElementById('employeeModal').style.display = 'flex';
+  });
+
+  document.getElementById('employeeModalSave').addEventListener('click',()=>{
+    const id = document.getElementById('employeeEditId').value;
+    const name = document.getElementById('employeeName').value.trim();
+    const position = document.getElementById('employeePosition').value.trim();
+    const email = document.getElementById('employeeEmail').value.trim();
+    const phone = document.getElementById('employeePhone').value.trim();
+    if(!name) return alert('Введите имя работника');
     store.employees = store.employees || [];
-    store.employees.push({id:Date.now(), name, position, email, phone});
-    store.activities.push(`Добавлен работник: ${name}`);
+    if(id) {
+      const emp = store.employees.find(e=>e.id===Number(id));
+      emp.name = name; emp.position = position; emp.email = email; emp.phone = phone;
+      store.activities.push(`Работник обновлён: ${name}`);
+    } else {
+      store.employees.push({id:Date.now(), name, position, email, phone});
+      store.activities.push(`Добавлен работник: ${name}`);
+    }
     save(store);
     refreshAll();
+    document.getElementById('employeeModal').style.display = 'none';
+  });
+
+  document.getElementById('employeeModalCancel').addEventListener('click',()=>{
+    document.getElementById('employeeModal').style.display = 'none';
   });
 
   // --- Обновление интерфейса ---
