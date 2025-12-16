@@ -253,7 +253,7 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
         document.getElementById('taskEditId').value = id;
         document.getElementById('taskTitle').value = task.title;
         document.getElementById('taskDue').value = task.due;
-        document.getElementById('taskAssigneeInput').value = task.assignee;
+        populateAssigneeSelect(task.assignee);
         document.getElementById('taskStatus').value = task.status;
         document.getElementById('taskModalTitle').textContent = 'Редактировать задачу';
         document.getElementById('taskModal').style.display = 'flex';
@@ -274,11 +274,23 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
   }
   
 
+  function populateAssigneeSelect(selectedValue = '') {
+    const select = document.getElementById('taskAssigneeInput');
+    select.innerHTML = '<option value="">-- Выберите --</option>';
+    (store.employees || []).forEach(e => {
+      const opt = document.createElement('option');
+      opt.value = e.name;
+      opt.textContent = e.name;
+      if (e.name === selectedValue) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+
   document.getElementById('addTask').addEventListener('click',()=>{
     document.getElementById('taskEditId').value = '';
     document.getElementById('taskTitle').value = '';
     document.getElementById('taskDue').value = new Date().toISOString().slice(0,10);
-    document.getElementById('taskAssigneeInput').value = '';
+    populateAssigneeSelect();
     document.getElementById('taskStatus').value = 'Запланировано';
     document.getElementById('taskModalTitle').textContent = 'Добавить задачу';
     document.getElementById('taskModal').style.display = 'flex';
@@ -551,6 +563,37 @@ const translations = {
     tableLast: "Последнее",
     tableStatus: "Статус",
     tableActions: "Действия",
+    // Modal translations
+    clientName: "Имя клиента",
+    clientNamePh: "Имя",
+    company: "Компания",
+    companyPh: "Компания",
+    contact: "Контакт",
+    contactPh: "Email или телефон",
+    status: "Статус",
+    status_lead: "Лид",
+    status_active: "Активный",
+    status_inactive: "Неактивный",
+    save: "Сохранить",
+    cancel: "Отмена",
+    taskName: "Название задачи",
+    taskNamePh: "Название",
+    deadline: "Срок",
+    assignee: "Исполнитель",
+    taskStatus: "Статус",
+    status_planned: "Запланировано",
+    status_progress: "В прогрессе",
+    status_done: "Завершено",
+    addEmployee: "Добавить работника",
+    employeeName: "Имя",
+    namePh: "Имя",
+    position: "Должность",
+    positionPh: "Должность",
+    phone: "Телефон",
+    phonePh: "Телефон",
+    editClient: "Редактировать клиента",
+    editTask: "Редактировать задачу",
+    editEmployee: "Редактировать работника",
   },
   en: {
     dashboard: "🏢 Dashboard",
@@ -578,6 +621,37 @@ const translations = {
     tableLast: "Last",
     tableStatus: "Status",
     tableActions: "Actions",
+    // Modal translations
+    clientName: "Client Name",
+    clientNamePh: "Name",
+    company: "Company",
+    companyPh: "Company",
+    contact: "Contact",
+    contactPh: "Email or phone",
+    status: "Status",
+    status_lead: "Lead",
+    status_active: "Active",
+    status_inactive: "Inactive",
+    save: "Save",
+    cancel: "Cancel",
+    taskName: "Task Name",
+    taskNamePh: "Name",
+    deadline: "Deadline",
+    assignee: "Assignee",
+    taskStatus: "Status",
+    status_planned: "Planned",
+    status_progress: "In Progress",
+    status_done: "Done",
+    addEmployee: "Add Employee",
+    employeeName: "Name",
+    namePh: "Name",
+    position: "Position",
+    positionPh: "Position",
+    phone: "Phone",
+    phonePh: "Phone",
+    editClient: "Edit Client",
+    editTask: "Edit Task",
+    editEmployee: "Edit Employee",
   },
   kz: {
     dashboard: "🏢 Панель",
@@ -605,6 +679,37 @@ const translations = {
     tableLast: "Соңғы",
     tableStatus: "Статус",
     tableActions: "Әрекеттер",
+    // Modal translations
+    clientName: "Клиент аты",
+    clientNamePh: "Аты",
+    company: "Компания",
+    companyPh: "Компания",
+    contact: "Байланыс",
+    contactPh: "Email немесе телефон",
+    status: "Статус",
+    status_lead: "Лид",
+    status_active: "Белсенді",
+    status_inactive: "Белсенді емес",
+    save: "Сақтау",
+    cancel: "Болдырмау",
+    taskName: "Тапсырма атауы",
+    taskNamePh: "Атауы",
+    deadline: "Мерзімі",
+    assignee: "Орындаушы",
+    taskStatus: "Статус",
+    status_planned: "Жоспарланған",
+    status_progress: "Орындалуда",
+    status_done: "Аяқталды",
+    addEmployee: "Қызметкер қосу",
+    employeeName: "Аты",
+    namePh: "Аты",
+    position: "Лауазымы",
+    positionPh: "Лауазымы",
+    phone: "Телефон",
+    phonePh: "Телефон",
+    editClient: "Клиентті өңдеу",
+    editTask: "Тапсырманы өңдеу",
+    editEmployee: "Қызметкерді өңдеу",
   }
 };
 
@@ -658,6 +763,20 @@ function updateLanguage(lang) {
 
   // Settings
   document.querySelector("#page-settings h3").textContent = translations[lang].settingsPanel;
+
+  // Modal translations
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[lang][key]) {
+      el.textContent = translations[lang][key];
+    }
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (translations[lang][key]) {
+      el.placeholder = translations[lang][key];
+    }
+  });
 }
 
 // Событие смены языка

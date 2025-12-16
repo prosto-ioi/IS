@@ -250,19 +250,23 @@
   <!-- Модальное окно для клиента -->
   <div id="clientModal" class="modal" style="display:none">
     <div class="modal-content">
-      <h3 id="clientModalTitle">Добавить клиента</h3>
+      <h3 id="clientModalTitle" data-i18n="addClient">Добавить клиента</h3>
       <input type="hidden" id="clientEditId" />
-      <label>Имя клиента</label>
-      <input type="text" id="clientName" placeholder="Имя" />
-      <label>Компания</label>
-      <input type="text" id="clientCompany" placeholder="Компания" />
-      <label>Контакт</label>
-      <input type="text" id="clientContact" placeholder="Email или телефон" />
-      <label>Статус</label>
-      <input type="text" id="clientStatus" placeholder="Лид, Активный..." value="Лид" />
+      <label data-i18n="clientName">Имя клиента</label>
+      <input type="text" id="clientName" data-i18n-placeholder="clientNamePh" placeholder="Имя" />
+      <label data-i18n="company">Компания</label>
+      <input type="text" id="clientCompany" data-i18n-placeholder="companyPh" placeholder="Компания" />
+      <label data-i18n="contact">Контакт</label>
+      <input type="text" id="clientContact" data-i18n-placeholder="contactPh" placeholder="Email или телефон" />
+      <label data-i18n="status">Статус</label>
+      <select id="clientStatus">
+        <option value="Лид" data-i18n="status_lead">Лид</option>
+        <option value="Активный" data-i18n="status_active">Активный</option>
+        <option value="Неактивный" data-i18n="status_inactive">Неактивный</option>
+      </select>
       <div class="modal-buttons">
-        <button class="btn" id="clientModalSave">Сохранить</button>
-        <button class="btn ghost" id="clientModalCancel">Отмена</button>
+        <button class="btn" id="clientModalSave" data-i18n="save">Сохранить</button>
+        <button class="btn ghost" id="clientModalCancel" data-i18n="cancel">Отмена</button>
       </div>
     </div>
   </div>
@@ -270,23 +274,23 @@
   <!-- Модальное окно для задачи -->
   <div id="taskModal" class="modal" style="display:none">
     <div class="modal-content">
-      <h3 id="taskModalTitle">Добавить задачу</h3>
+      <h3 id="taskModalTitle" data-i18n="addTask">Добавить задачу</h3>
       <input type="hidden" id="taskEditId" />
-      <label>Название задачи</label>
-      <input type="text" id="taskTitle" placeholder="Название" />
-      <label>Срок (YYYY-MM-DD)</label>
+      <label data-i18n="taskName">Название задачи</label>
+      <input type="text" id="taskTitle" data-i18n-placeholder="taskNamePh" placeholder="Название" />
+      <label data-i18n="deadline">Срок</label>
       <input type="date" id="taskDue" />
-      <label>Исполнитель</label>
-      <input type="text" id="taskAssigneeInput" placeholder="Исполнитель" />
-      <label>Статус</label>
+      <label data-i18n="assignee">Исполнитель</label>
+      <select id="taskAssigneeInput"></select>
+      <label data-i18n="taskStatus">Статус</label>
       <select id="taskStatus">
-        <option value="Запланировано">Запланировано</option>
-        <option value="В прогрессе">В прогрессе</option>
-        <option value="Завершено">Завершено</option>
+        <option value="Запланировано" data-i18n="status_planned">Запланировано</option>
+        <option value="В прогрессе" data-i18n="status_progress">В прогрессе</option>
+        <option value="Завершено" data-i18n="status_done">Завершено</option>
       </select>
       <div class="modal-buttons">
-        <button class="btn" id="taskModalSave">Сохранить</button>
-        <button class="btn ghost" id="taskModalCancel">Отмена</button>
+        <button class="btn" id="taskModalSave" data-i18n="save">Сохранить</button>
+        <button class="btn ghost" id="taskModalCancel" data-i18n="cancel">Отмена</button>
       </div>
     </div>
   </div>
@@ -294,19 +298,19 @@
   <!-- Модальное окно для работника -->
   <div id="employeeModal" class="modal" style="display:none">
     <div class="modal-content">
-      <h3 id="employeeModalTitle">Добавить работника</h3>
+      <h3 id="employeeModalTitle" data-i18n="addEmployee">Добавить работника</h3>
       <input type="hidden" id="employeeEditId" />
-      <label>Имя</label>
-      <input type="text" id="employeeName" placeholder="Имя" />
-      <label>Должность</label>
-      <input type="text" id="employeePosition" placeholder="Должность" />
+      <label data-i18n="employeeName">Имя</label>
+      <input type="text" id="employeeName" data-i18n-placeholder="namePh" placeholder="Имя" />
+      <label data-i18n="position">Должность</label>
+      <input type="text" id="employeePosition" data-i18n-placeholder="positionPh" placeholder="Должность" />
       <label>Email</label>
       <input type="email" id="employeeEmail" placeholder="Email" />
-      <label>Телефон</label>
-      <input type="tel" id="employeePhone" placeholder="Телефон" />
+      <label data-i18n="phone">Телефон</label>
+      <input type="tel" id="employeePhone" data-i18n-placeholder="phonePh" placeholder="Телефон" />
       <div class="modal-buttons">
-        <button class="btn" id="employeeModalSave">Сохранить</button>
-        <button class="btn ghost" id="employeeModalCancel">Отмена</button>
+        <button class="btn" id="employeeModalSave" data-i18n="save">Сохранить</button>
+        <button class="btn ghost" id="employeeModalCancel" data-i18n="cancel">Отмена</button>
       </div>
     </div>
   </div>
