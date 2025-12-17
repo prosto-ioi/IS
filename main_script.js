@@ -12,7 +12,7 @@ const defaultData = {
     {id:2,name:'Нургали С.',company:'Sultan Logistics',contact:'nurgali@sultan.kz',last:'2025-09-30',status:'Лид',notes:'Интересовался интеграцией бухгалтерии'},
     {id:3,name:'Айшат Т.',company:'KazFarm',contact:'aishat@kazfarm.kz',last:'2025-10-01',status:'Активный',notes:'Нужна поддержка 24/7'}
   ],
-  tasks:[{id:1,title:'Позвонить Аружан',due:'2025-10-15',assignee:'Нургали',status:'В прогрессе'}],
+  tasks:[{id:1,title:'Позвонить Аружан',due:'2025-10-15',assignee:'Нургали С.',status:'В прогрессе'}],
   employees:[
     {id:1,name:'Нургали С.',position:'Менеджер',email:'nurgali@company.kz',phone:'+7 777 123 4567'},
     {id:2,name:'Айдос К.',position:'Разработчик',email:'aidos@company.kz',phone:'+7 777 234 5678'}
@@ -69,13 +69,15 @@ function renderCharts(){
 
 // --- Clients renderers ---
 function renderClientsTable(filter=''){
+  const lang = localStorage.getItem("crmLang") || "ru";
+  const t = translations[lang];
   const tbody=document.getElementById('clientsTableBody');tbody.innerHTML='';
   store.clients.filter(c=> (c.name+c.company+c.status).toLowerCase().includes(filter.toLowerCase())).forEach(c=>{
     const tr=document.createElement('tr');
     tr.innerHTML = `<td><strong>${c.name}</strong></td><td>${c.company}</td><td>${c.contact}</td><td>${c.last}</td><td><span style="font-weight:600;color:${c.status.toLowerCase().includes('лид')? '#a16207' : '#105f20'}">${c.status}</span></td><td>
-  <button data-id="${c.id}" class="btn ghost editClient">Редакт</button>
-  <button data-id="${c.id}" class="btn ghost viewClient">Открыть</button>
-  <button data-id="${c.id}" class="btn ghost deleteClient" style="color:#dc2626;">Удалить</button>
+  <button data-id="${c.id}" class="btn ghost editClient">${t.btnEdit}</button>
+  <button data-id="${c.id}" class="btn ghost viewClient">${t.btnOpen}</button>
+  <button data-id="${c.id}" class="btn ghost deleteClient" style="color:#dc2626;">${t.btnDelete}</button>
 </td>
 `;
     tbody.appendChild(tr);
@@ -104,7 +106,7 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
   function editClient(id){
     const client = store.clients.find(c=>c.id===id);
     document.getElementById('clientEditId').value = id;
-    document.getElementById('clientName').value = client.name;
+    document.getElementById('clientNameInput').value = client.name;
     document.getElementById('clientCompany').value = client.company;
     document.getElementById('clientContact').value = client.contact;
     document.getElementById('clientStatus').value = client.status;
@@ -130,7 +132,7 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
   // --- Добавление клиента ---
   document.getElementById('addClient').addEventListener('click',()=>{
     document.getElementById('clientEditId').value = '';
-    document.getElementById('clientName').value = '';
+    document.getElementById('clientNameInput').value = '';
     document.getElementById('clientCompany').value = '';
     document.getElementById('clientContact').value = '';
     document.getElementById('clientStatus').value = 'Лид';
@@ -140,10 +142,10 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
 
   document.getElementById('clientModalSave').addEventListener('click',()=>{
     const id = document.getElementById('clientEditId').value;
-    const name = document.getElementById('clientName').value.trim();
+    const name = document.getElementById('clientNameInput').value.trim();
     const company = document.getElementById('clientCompany').value.trim();
     const contact = document.getElementById('clientContact').value.trim();
-    const status = document.getElementById('clientStatus').value.trim();
+    const status = document.getElementById('clientStatus').value;
     if(!name) return alert('Введите имя клиента');
     if(id) {
       const client = store.clients.find(c=>c.id===Number(id));
@@ -213,6 +215,8 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
 
   // --- Задачи ---
   function renderTasks(){
+    const lang = localStorage.getItem("crmLang") || "ru";
+    const tr_lang = translations[lang];
     const tbody=document.getElementById('tasksBody');tbody.innerHTML='';
     store.tasks.forEach(t=>{
       const tr=document.createElement('tr');
@@ -222,27 +226,13 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
   <td>${t.assignee}</td>
   <td>${t.status}</td>
   <td>
-    <button data-id="${t.id}" class="btn ghost editTask">Редакт</button>
-    <button data-id="${t.id}" class="btn ghost deleteTask" style="color:#dc2626;">Удалить</button>
+    <button data-id="${t.id}" class="btn ghost editTask">${tr_lang.btnEdit}</button>
+    <button data-id="${t.id}" class="btn ghost deleteTask" style="color:#dc2626;">${tr_lang.btnDelete}</button>
   </td>
 `;
       tbody.appendChild(tr);
     });
     attachTaskButtons();
-    renderAssigneeSelect();
-  }
-
-  function renderAssigneeSelect(){
-    const select = document.getElementById('taskAssignee');
-    if(!select) return;
-    const assignees = [...new Set(store.tasks.map(t=>t.assignee).filter(Boolean))];
-    select.innerHTML = '<option value="">Все исполнители</option>';
-    assignees.forEach(a=>{
-      const opt = document.createElement('option');
-      opt.value = a;
-      opt.textContent = a;
-      select.appendChild(opt);
-    });
   }
 
   function attachTaskButtons(){
@@ -254,7 +244,7 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
         document.getElementById('taskTitle').value = task.title;
         document.getElementById('taskDue').value = task.due;
         populateAssigneeSelect(task.assignee);
-        document.getElementById('taskStatus').value = task.status;
+        document.getElementById('taskStatusSelect').value = task.status;
         document.getElementById('taskModalTitle').textContent = 'Редактировать задачу';
         document.getElementById('taskModal').style.display = 'flex';
       });
@@ -272,7 +262,6 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
       });
     });
   }
-  
 
   function populateAssigneeSelect(selectedValue = '') {
     const select = document.getElementById('taskAssigneeInput');
@@ -291,7 +280,7 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
     document.getElementById('taskTitle').value = '';
     document.getElementById('taskDue').value = new Date().toISOString().slice(0,10);
     populateAssigneeSelect();
-    document.getElementById('taskStatus').value = 'Запланировано';
+    document.getElementById('taskStatusSelect').value = 'Запланировано';
     document.getElementById('taskModalTitle').textContent = 'Добавить задачу';
     document.getElementById('taskModal').style.display = 'flex';
   });
@@ -300,8 +289,8 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
     const id = document.getElementById('taskEditId').value;
     const title = document.getElementById('taskTitle').value.trim();
     const due = document.getElementById('taskDue').value;
-    const assignee = document.getElementById('taskAssigneeInput').value.trim();
-    const status = document.getElementById('taskStatus').value;
+    const assignee = document.getElementById('taskAssigneeInput').value;
+    const status = document.getElementById('taskStatusSelect').value;
     if(!title) return alert('Введите название задачи');
     if(id) {
       const task = store.tasks.find(t=>t.id===Number(id));
@@ -379,20 +368,24 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
 
   // --- Работники ---
   function renderEmployees(){
+    const lang = localStorage.getItem("crmLang") || "ru";
+    const t = translations[lang];
     const tbody = document.getElementById('employeesBody');
     if(!tbody) return;
     tbody.innerHTML = '';
     store.employees = store.employees || [];
     store.employees.forEach(e=>{
       const tr = document.createElement('tr');
+      const posLabel = e.position === 'manager' ? t.positionManager : t.positionUser;
+      const genderLabel = e.gender === 'male' ? t.genderMale : t.genderFemale;
       tr.innerHTML = `
         <td>${e.name}</td>
-        <td>${e.position}</td>
-        <td>${e.email}</td>
+        <td>${posLabel}</td>
+        <td>${genderLabel}</td>
         <td>${e.phone}</td>
         <td>
-          <button data-id="${e.id}" class="btn ghost editEmployee">Редакт</button>
-          <button data-id="${e.id}" class="btn ghost deleteEmployee" style="color:#dc2626;">Удалить</button>
+          <button data-id="${e.id}" class="btn ghost editEmployee">${t.btnEdit}</button>
+          <button data-id="${e.id}" class="btn ghost deleteEmployee" style="color:#dc2626;">${t.btnDelete}</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -406,9 +399,9 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
         const id = Number(btn.getAttribute('data-id'));
         const emp = store.employees.find(e=>e.id===id);
         document.getElementById('employeeEditId').value = id;
-        document.getElementById('employeeName').value = emp.name;
-        document.getElementById('employeePosition').value = emp.position;
-        document.getElementById('employeeEmail').value = emp.email;
+        document.getElementById('employeeNameInput').value = emp.name;
+        document.getElementById('employeePosition').value = emp.position || 'user';
+        document.getElementById('employeeGender').value = emp.gender || 'male';
         document.getElementById('employeePhone').value = emp.phone;
         document.getElementById('employeeModalTitle').textContent = 'Редактировать работника';
         document.getElementById('employeeModal').style.display = 'flex';
@@ -429,9 +422,9 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
 
   document.getElementById('addEmployee').addEventListener('click',()=>{
     document.getElementById('employeeEditId').value = '';
-    document.getElementById('employeeName').value = '';
-    document.getElementById('employeePosition').value = '';
-    document.getElementById('employeeEmail').value = '';
+    document.getElementById('employeeNameInput').value = '';
+    document.getElementById('employeePosition').value = 'user';
+    document.getElementById('employeeGender').value = 'male';
     document.getElementById('employeePhone').value = '';
     document.getElementById('employeeModalTitle').textContent = 'Добавить работника';
     document.getElementById('employeeModal').style.display = 'flex';
@@ -439,18 +432,18 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
 
   document.getElementById('employeeModalSave').addEventListener('click',()=>{
     const id = document.getElementById('employeeEditId').value;
-    const name = document.getElementById('employeeName').value.trim();
-    const position = document.getElementById('employeePosition').value.trim();
-    const email = document.getElementById('employeeEmail').value.trim();
+    const name = document.getElementById('employeeNameInput').value.trim();
+    const position = document.getElementById('employeePosition').value;
+    const gender = document.getElementById('employeeGender').value;
     const phone = document.getElementById('employeePhone').value.trim();
     if(!name) return alert('Введите имя работника');
     store.employees = store.employees || [];
     if(id) {
       const emp = store.employees.find(e=>e.id===Number(id));
-      emp.name = name; emp.position = position; emp.email = email; emp.phone = phone;
+      emp.name = name; emp.position = position; emp.gender = gender; emp.phone = phone;
       store.activities.push(`Работник обновлён: ${name}`);
     } else {
-      store.employees.push({id:Date.now(), name, position, email, phone});
+      store.employees.push({id:Date.now(), name, position, gender, phone});
       store.activities.push(`Добавлен работник: ${name}`);
     }
     save(store);
@@ -563,37 +556,26 @@ const translations = {
     tableLast: "Последнее",
     tableStatus: "Статус",
     tableActions: "Действия",
-    // Modal translations
-    clientName: "Имя клиента",
-    clientNamePh: "Имя",
-    company: "Компания",
-    companyPh: "Компания",
-    contact: "Контакт",
-    contactPh: "Email или телефон",
-    status: "Статус",
-    status_lead: "Лид",
-    status_active: "Активный",
-    status_inactive: "Неактивный",
-    save: "Сохранить",
-    cancel: "Отмена",
-    taskName: "Название задачи",
-    taskNamePh: "Название",
-    deadline: "Срок",
-    assignee: "Исполнитель",
-    taskStatus: "Статус",
-    status_planned: "Запланировано",
-    status_progress: "В прогрессе",
-    status_done: "Завершено",
-    addEmployee: "Добавить работника",
-    employeeName: "Имя",
-    namePh: "Имя",
-    position: "Должность",
-    positionPh: "Должность",
-    phone: "Телефон",
-    phonePh: "Телефон",
-    editClient: "Редактировать клиента",
-    editTask: "Редактировать задачу",
-    editEmployee: "Редактировать работника",
+    btnEdit: "Редакт",
+    btnOpen: "Открыть",
+    btnDelete: "Удалить",
+    viewTable: "Таблица",
+    viewCards: "Карточки",
+    // Tasks
+    taskTitle: "Задача",
+    taskDue: "Срок",
+    taskAssignee: "Исполнитель",
+    // Employees
+    employees: "👷 Работники",
+    addEmployee: "+ Добавить работника",
+    empName: "Имя",
+    empPosition: "Должность",
+    empGender: "Пол",
+    empPhone: "Телефон",
+    genderMale: "Мужской",
+    genderFemale: "Женский",
+    positionUser: "Пользователь",
+    positionManager: "Менеджер",
   },
   en: {
     dashboard: "🏢 Dashboard",
@@ -621,37 +603,26 @@ const translations = {
     tableLast: "Last",
     tableStatus: "Status",
     tableActions: "Actions",
-    // Modal translations
-    clientName: "Client Name",
-    clientNamePh: "Name",
-    company: "Company",
-    companyPh: "Company",
-    contact: "Contact",
-    contactPh: "Email or phone",
-    status: "Status",
-    status_lead: "Lead",
-    status_active: "Active",
-    status_inactive: "Inactive",
-    save: "Save",
-    cancel: "Cancel",
-    taskName: "Task Name",
-    taskNamePh: "Name",
-    deadline: "Deadline",
-    assignee: "Assignee",
-    taskStatus: "Status",
-    status_planned: "Planned",
-    status_progress: "In Progress",
-    status_done: "Done",
-    addEmployee: "Add Employee",
-    employeeName: "Name",
-    namePh: "Name",
-    position: "Position",
-    positionPh: "Position",
-    phone: "Phone",
-    phonePh: "Phone",
-    editClient: "Edit Client",
-    editTask: "Edit Task",
-    editEmployee: "Edit Employee",
+    btnEdit: "Edit",
+    btnOpen: "Open",
+    btnDelete: "Delete",
+    viewTable: "Table",
+    viewCards: "Cards",
+    // Tasks
+    taskTitle: "Task",
+    taskDue: "Due",
+    taskAssignee: "Assignee",
+    // Employees
+    employees: "👷 Employees",
+    addEmployee: "+ Add Employee",
+    empName: "Name",
+    empPosition: "Position",
+    empGender: "Gender",
+    empPhone: "Phone",
+    genderMale: "Male",
+    genderFemale: "Female",
+    positionUser: "User",
+    positionManager: "Manager",
   },
   kz: {
     dashboard: "🏢 Панель",
@@ -679,37 +650,26 @@ const translations = {
     tableLast: "Соңғы",
     tableStatus: "Статус",
     tableActions: "Әрекеттер",
-    // Modal translations
-    clientName: "Клиент аты",
-    clientNamePh: "Аты",
-    company: "Компания",
-    companyPh: "Компания",
-    contact: "Байланыс",
-    contactPh: "Email немесе телефон",
-    status: "Статус",
-    status_lead: "Лид",
-    status_active: "Белсенді",
-    status_inactive: "Белсенді емес",
-    save: "Сақтау",
-    cancel: "Болдырмау",
-    taskName: "Тапсырма атауы",
-    taskNamePh: "Атауы",
-    deadline: "Мерзімі",
-    assignee: "Орындаушы",
-    taskStatus: "Статус",
-    status_planned: "Жоспарланған",
-    status_progress: "Орындалуда",
-    status_done: "Аяқталды",
-    addEmployee: "Қызметкер қосу",
-    employeeName: "Аты",
-    namePh: "Аты",
-    position: "Лауазымы",
-    positionPh: "Лауазымы",
-    phone: "Телефон",
-    phonePh: "Телефон",
-    editClient: "Клиентті өңдеу",
-    editTask: "Тапсырманы өңдеу",
-    editEmployee: "Қызметкерді өңдеу",
+    btnEdit: "Өзгерту",
+    btnOpen: "Ашу",
+    btnDelete: "Жою",
+    viewTable: "Кесте",
+    viewCards: "Карточкалар",
+    // Tasks
+    taskTitle: "Тапсырма",
+    taskDue: "Мерзімі",
+    taskAssignee: "Орындаушы",
+    // Employees
+    employees: "👷 Қызметкерлер",
+    addEmployee: "+ Қызметкер қосу",
+    empName: "Аты",
+    empPosition: "Лауазымы",
+    empGender: "Жынысы",
+    empPhone: "Телефон",
+    genderMale: "Ер",
+    genderFemale: "Әйел",
+    positionUser: "Пайдаланушы",
+    positionManager: "Менеджер",
   }
 };
 
@@ -764,19 +724,40 @@ function updateLanguage(lang) {
   // Settings
   document.querySelector("#page-settings h3").textContent = translations[lang].settingsPanel;
 
-  // Modal translations
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.getAttribute('data-i18n');
-    if (translations[lang][key]) {
-      el.textContent = translations[lang][key];
-    }
-  });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
-    const key = el.getAttribute('data-i18n-placeholder');
-    if (translations[lang][key]) {
-      el.placeholder = translations[lang][key];
-    }
-  });
+  // View toggle buttons
+  const viewBtns = document.querySelectorAll('.view-toggle button');
+  if(viewBtns.length >= 2) {
+    viewBtns[0].textContent = translations[lang].viewTable;
+    viewBtns[1].textContent = translations[lang].viewCards;
+  }
+
+  // Tasks table header
+  const tasksHeader = document.querySelector("#page-tasks thead tr");
+  if(tasksHeader) {
+    tasksHeader.children[0].textContent = translations[lang].taskTitle;
+    tasksHeader.children[1].textContent = translations[lang].taskDue;
+    tasksHeader.children[2].textContent = translations[lang].taskAssignee;
+    tasksHeader.children[3].textContent = translations[lang].tableStatus;
+  }
+
+  // Employees
+  document.querySelector('.menu button[data-page="employees"]').textContent = translations[lang].employees;
+  document.getElementById("addEmployee").textContent = translations[lang].addEmployee;
+  
+  // Employees table header
+  const empHeader = document.querySelector("#page-employees thead tr");
+  if(empHeader) {
+    empHeader.children[0].textContent = translations[lang].empName;
+    empHeader.children[1].textContent = translations[lang].empPosition;
+    empHeader.children[2].textContent = translations[lang].empGender;
+    empHeader.children[3].textContent = translations[lang].empPhone;
+    empHeader.children[4].textContent = translations[lang].tableActions;
+  }
+
+  // Re-render tables to update button labels
+  renderClientsTable();
+  renderTasks();
+  renderEmployees();
 }
 
 // Событие смены языка
