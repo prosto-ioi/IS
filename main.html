@@ -237,9 +237,25 @@
           <h3>Настройки</h3>
           <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
             <label><input type="checkbox" id="emailNotif" /> Включить e-mail уведомления</label>
-            <label style="margin-left:12px">Роль: <select id="roleSelect"><option>Admin</option><option>Manager</option><option>User</option></select></label>
           </div>
           <div style="margin-top:12px">API интеграция: <input id="apiKey" placeholder="API Key..." style="padding:6px;border-radius:6px;border:1px solid #eef2f6" /></div>
+        </div>
+        
+        <!-- Управление пользователями и ролями (только для админов) -->
+        <div class="panel" id="usersManagementPanel" style="margin-top:20px;">
+          <h3>👥 Управление пользователями</h3>
+          <p style="color:var(--muted);margin-bottom:12px;">Назначайте роли пользователям системы</p>
+          <table style="width:100%;">
+            <thead>
+              <tr>
+                <th>Пользователь</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
         </div>
       </section>
 

@@ -117,8 +117,12 @@ function loadUsers(){
     // хеш пароля
     const passwordHash = await hashPassword(formData.password);
   
+    // Первый пользователь становится админом, остальные — user
+    const isFirstUser = users.length === 0;
+    
     const user = {
       id: genId(),
+      name: formData.businessName || formData.email.split('@')[0],
       businessName: formData.businessName || '',
       email: formData.email.toLowerCase(),
       passwordHash,
@@ -127,6 +131,7 @@ function loadUsers(){
       address: formData.address || '',
       phone: formData.phone || '',
       site: formData.site || '',
+      role: isFirstUser ? 'admin' : 'user',
       createdAt: new Date().toISOString()
     };
   

@@ -5,6 +5,114 @@ if (!loggedInUserId) {
   window.location.href = "index.html";
 }
 
+// === СИСТЕМА РОЛЕЙ И ДОСТУПОВ ===
+// Роли: admin (полный доступ), manager (клиенты, задачи, сделки), user (только просмотр)
+function getCurrentUserRole() {
+  const userId = localStorage.getItem('loggedInUserId');
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const user = users.find(u => u.id == userId);
+  return user ? (user.role || 'user') : 'user';
+}
+
+function getCurrentUserName() {
+  const userId = localStorage.getItem('loggedInUserId');
+  const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const user = users.find(u => u.id == userId);
+  return user ? user.name : 'Пользователь';
+}
+
+// Проверка прав доступа
+const permissions = {
+  admin: {
+    canViewClients: true, canEditClients: true, canDeleteClients: true,
+    canViewTasks: true, canEditTasks: true, canDeleteTasks: true,
+    canViewDeals: true, canEditDeals: true,
+    canViewEmployees: true, canEditEmployees: true, canDeleteEmployees: true,
+    canViewReports: true,
+    canViewSettings: true, canEditSettings: true,
+    canManageRoles: true
+  },
+  manager: {
+    canViewClients: true, canEditClients: true, canDeleteClients: true,
+    canViewTasks: true, canEditTasks: true, canDeleteTasks: true,
+    canViewDeals: true, canEditDeals: true,
+    canViewEmployees: true, canEditEmployees: false, canDeleteEmployees: false,
+    canViewReports: true,
+    canViewSettings: false, canEditSettings: false,
+    canManageRoles: false
+  },
+  user: {
+    canViewClients: true, canEditClients: false, canDeleteClients: false,
+    canViewTasks: true, canEditTasks: false, canDeleteTasks: false,
+    canViewDeals: true, canEditDeals: false,
+    canViewEmployees: true, canEditEmployees: false, canDeleteEmployees: false,
+    canViewReports: true,
+    canViewSettings: false, canEditSettings: false,
+    canManageRoles: false
+  }
+};
+
+function hasPermission(permission) {
+  const role = getCurrentUserRole();
+  return permissions[role] ? permissions[role][permission] : false;
+}
+
+function updateUIByRole() {
+  const role = getCurrentUserRole();
+  const userName = getCurrentUserName();
+  
+  // Обновляем имя пользователя в шапке
+  const userNameEl = document.querySelector('.user-chip div[style*="font-weight:700"]');
+  const userRoleEl = document.querySelector('.user-chip div[style*="font-size:12px"]');
+  if (userNameEl) userNameEl.textContent = userName;
+  if (userRoleEl) {
+    const roleLabels = { admin: 'Администратор', manager: 'Менеджер', user: 'Пользователь' };
+    userRoleEl.textContent = roleLabels[role] || role;
+  }
+  
+  // Скрываем/показываем кнопки в зависимости от роли
+  const addClientBtn = document.getElementById('addClient');
+  const addTaskBtn = document.getElementById('addTask');
+  const addDealBtn = document.getElementById('addDeal');
+  const addEmployeeBtn = document.getElementById('addEmployee');
+  const settingsMenu = document.querySelector('.menu button[data-page="settings"]');
+  
+  if (addClientBtn) addClientBtn.style.display = hasPermission('canEditClients') ? '' : 'none';
+  if (addTaskBtn) addTaskBtn.style.display = hasPermission('canEditTasks') ? '' : 'none';
+  if (addDealBtn) addDealBtn.style.display = hasPermission('canEditDeals') ? '' : 'none';
+  if (addEmployeeBtn) addEmployeeBtn.style.display = hasPermission('canEditEmployees') ? '' : 'none';
+  if (settingsMenu) settingsMenu.style.display = hasPermission('canViewSettings') ? '' : 'none';
+  
+  // Скрываем импорт/экспорт CSV для user
+  const csvImport = document.getElementById('csvImport');
+  const exportCsv = document.getElementById('exportCsv');
+  if (csvImport) csvImport.style.display = hasPermission('canEditClients') ? '' : 'none';
+  if (exportCsv) exportCsv.style.display = hasPermission('canEditClients') ? '' : 'none';
+}
+
+function updateActionButtonsByRole() {
+  // Кнопки редактирования/удаления клиентов
+  document.querySelectorAll('.editClient, .deleteClient').forEach(btn => {
+    const isEdit = btn.classList.contains('editClient');
+    const perm = isEdit ? 'canEditClients' : 'canDeleteClients';
+    btn.style.display = hasPermission(perm) ? '' : 'none';
+  });
+  
+  // Кнопки редактирования/удаления задач
+  document.querySelectorAll('.editTask, .deleteTask').forEach(btn => {
+    const isEdit = btn.classList.contains('editTask');
+    const perm = isEdit ? 'canEditTasks' : 'canDeleteTasks';
+    btn.style.display = hasPermission(perm) ? '' : 'none';
+  });
+  
+  // Кнопки редактирования/удаления работников
+  document.querySelectorAll('.editEmployee, .deleteEmployee').forEach(btn => {
+    const isEdit = btn.classList.contains('editEmployee');
+    const perm = isEdit ? 'canEditEmployees' : 'canDeleteEmployees';
+    btn.style.display = hasPermission(perm) ? '' : 'none';
+  });
+}
+
 const storageKey = 'mybiz_crm_v2_corp';
 const defaultData = {
   clients:[
@@ -107,7 +215,7 @@ window.saveNotes = function(id){const el=document.getElementById('notes-'+id);co
 window.createTaskForClient = function(id){const client=store.clients.find(c=>c.id===id);const title=prompt('Краткое название задачи для '+client.name);if(!title) return;const t={id:Date.now(),title,due:new Date().toISOString().slice(0,10),assignee:store.tasks[0]?store.tasks[0].assignee:'Нургали',status:'Запланировано'};store.tasks.push(t);store.activities.push(`Новая задача для ${client.name}: ${title}`);save(store);refreshAll();}
 
 function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(b=>b.addEventListener('click',e=>{const id=Number(b.getAttribute('data-id'));const c=store.clients.find(x=>x.id===id);showClientDetail(c);document.getElementById('view-split').style.display='block';document.getElementById('view-table').style.display='none';document.getElementById('view-cards').style.display='none';}));
-  document.querySelectorAll('.editClient').forEach(b=>b.addEventListener('click',e=>{const id=Number(b.getAttribute('data-id'));editClient(id);})); attachDeleteButtons();}
+  document.querySelectorAll('.editClient').forEach(b=>b.addEventListener('click',e=>{const id=Number(b.getAttribute('data-id'));editClient(id);})); attachDeleteButtons(); updateActionButtonsByRole();}
   function updateClientModalLabels(lang) {
     const t = translations[lang];
     const modal = document.getElementById('clientModal');
@@ -296,6 +404,7 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
         }
       });
     });
+    updateActionButtonsByRole();
   }
 
   function updateTaskModalLabels(lang) {
@@ -405,20 +514,72 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
 
   // --- Настройки ---
   document.getElementById('emailNotif').checked=store.settings.emailNotif;
-  document.getElementById('roleSelect').value=store.settings.role;
   document.getElementById('apiKey').value=store.settings.apiKey||'';
   document.getElementById('emailNotif').addEventListener('change',e=>{
     store.settings.emailNotif=e.target.checked;
-    save(store);
-  });
-  document.getElementById('roleSelect').addEventListener('change',e=>{
-    store.settings.role=e.target.value;
     save(store);
   });
   document.getElementById('apiKey').addEventListener('input',e=>{
     store.settings.apiKey=e.target.value;
     save(store);
   });
+
+  // --- Управление пользователями (только для админов) ---
+  function renderUsersTable() {
+    const panel = document.getElementById('usersManagementPanel');
+    if (!hasPermission('canManageRoles')) {
+      if (panel) panel.style.display = 'none';
+      return;
+    }
+    if (panel) panel.style.display = 'block';
+    
+    const tbody = document.getElementById('usersTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const currentUserId = localStorage.getItem('loggedInUserId');
+    
+    users.forEach(u => {
+      const tr = document.createElement('tr');
+      const isCurrentUser = u.id === currentUserId;
+      const roleLabels = { admin: 'Администратор', manager: 'Менеджер', user: 'Пользователь' };
+      
+      tr.innerHTML = `
+        <td><strong>${u.name || u.email.split('@')[0]}</strong></td>
+        <td>${u.email}</td>
+        <td>
+          <select class="role-select" data-user-id="${u.id}" ${isCurrentUser ? 'disabled' : ''}>
+            <option value="admin" ${u.role === 'admin' ? 'selected' : ''}>Администратор</option>
+            <option value="manager" ${u.role === 'manager' ? 'selected' : ''}>Менеджер</option>
+            <option value="user" ${u.role === 'user' || !u.role ? 'selected' : ''}>Пользователь</option>
+          </select>
+        </td>
+        <td>${isCurrentUser ? '<em style="color:var(--muted)">Это вы</em>' : ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    
+    // Обработчики изменения роли
+    document.querySelectorAll('.role-select').forEach(select => {
+      select.addEventListener('change', (e) => {
+        const userId = e.target.getAttribute('data-user-id');
+        const newRole = e.target.value;
+        changeUserRole(userId, newRole);
+      });
+    });
+  }
+  
+  function changeUserRole(userId, newRole) {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const user = users.find(u => u.id === userId);
+    if (user) {
+      user.role = newRole;
+      localStorage.setItem('users', JSON.stringify(users));
+      addNotif(`Роль пользователя ${user.email} изменена на ${newRole}`);
+      renderUsersTable();
+    }
+  }
 
   // --- Работники ---
   function renderEmployees(){
@@ -496,6 +657,7 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
         }
       });
     });
+    updateActionButtonsByRole();
   }
 
   document.getElementById('addEmployee').addEventListener('click',()=>{
@@ -546,6 +708,8 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
     renderTasks();
     renderDeals();
     renderEmployees();
+    renderUsersTable();
+    updateUIByRole();
   }
 
   document.getElementById('globalSearch').addEventListener('input',e=>{
@@ -966,6 +1130,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const savedLang = localStorage.getItem("crmLang") || "ru";
   document.getElementById("languageSelect").value = savedLang;
   updateLanguage(savedLang);
+  updateUIByRole();
 });
 
 
