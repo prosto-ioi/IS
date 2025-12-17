@@ -74,7 +74,12 @@ function renderClientsTable(filter=''){
   const tbody=document.getElementById('clientsTableBody');tbody.innerHTML='';
   store.clients.filter(c=> (c.name+c.company+c.status).toLowerCase().includes(filter.toLowerCase())).forEach(c=>{
     const tr=document.createElement('tr');
-    tr.innerHTML = `<td><strong>${c.name}</strong></td><td>${c.company}</td><td>${c.contact}</td><td>${c.last}</td><td><span style="font-weight:600;color:${c.status.toLowerCase().includes('лид')? '#a16207' : '#105f20'}">${c.status}</span></td><td>
+    let statusLabel = c.status;
+    if(c.status === 'Лид') statusLabel = t.statusLead;
+    else if(c.status === 'Активный') statusLabel = t.statusActive;
+    else if(c.status === 'Неактивный') statusLabel = t.statusInactive;
+    const statusColor = c.status === 'Лид' ? '#a16207' : c.status === 'Неактивный' ? '#888888' : '#105f20';
+    tr.innerHTML = `<td><strong>${c.name}</strong></td><td>${c.company}</td><td>${c.contact}</td><td>${c.last}</td><td><span style="font-weight:600;color:${statusColor}">${statusLabel}</span></td><td>
   <button data-id="${c.id}" class="btn ghost editClient">${t.btnEdit}</button>
   <button data-id="${c.id}" class="btn ghost viewClient">${t.btnOpen}</button>
   <button data-id="${c.id}" class="btn ghost deleteClient" style="color:#dc2626;">${t.btnDelete}</button>
@@ -103,14 +108,36 @@ window.createTaskForClient = function(id){const client=store.clients.find(c=>c.i
 
 function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(b=>b.addEventListener('click',e=>{const id=Number(b.getAttribute('data-id'));const c=store.clients.find(x=>x.id===id);showClientDetail(c);document.getElementById('view-split').style.display='block';document.getElementById('view-table').style.display='none';document.getElementById('view-cards').style.display='none';}));
   document.querySelectorAll('.editClient').forEach(b=>b.addEventListener('click',e=>{const id=Number(b.getAttribute('data-id'));editClient(id);})); attachDeleteButtons();}
+  function updateClientModalLabels(lang) {
+    const t = translations[lang];
+    const modal = document.getElementById('clientModal');
+    const labels = modal.querySelectorAll('label');
+    if(labels[0]) labels[0].textContent = t.clientNameLabel;
+    if(labels[1]) labels[1].textContent = t.companyLabel;
+    if(labels[2]) labels[2].textContent = t.contactLabel;
+    if(labels[3]) labels[3].textContent = t.statusLabel;
+    document.getElementById('clientNameInput').placeholder = t.namePlaceholder;
+    document.getElementById('clientCompany').placeholder = t.companyLabel;
+    document.getElementById('clientContact').placeholder = t.contactPlaceholder;
+    document.getElementById('clientModalSave').textContent = t.save;
+    document.getElementById('clientModalCancel').textContent = t.cancel;
+    // Status options
+    const statusSelect = document.getElementById('clientStatus');
+    statusSelect.options[0].textContent = t.statusLead;
+    statusSelect.options[1].textContent = t.statusActive;
+    statusSelect.options[2].textContent = t.statusInactive;
+  }
+
   function editClient(id){
+    const lang = localStorage.getItem("crmLang") || "ru";
     const client = store.clients.find(c=>c.id===id);
     document.getElementById('clientEditId').value = id;
     document.getElementById('clientNameInput').value = client.name;
     document.getElementById('clientCompany').value = client.company;
     document.getElementById('clientContact').value = client.contact;
     document.getElementById('clientStatus').value = client.status;
-    document.getElementById('clientModalTitle').textContent = 'Редактировать клиента';
+    document.getElementById('clientModalTitle').textContent = translations[lang].editClient;
+    updateClientModalLabels(lang);
     document.getElementById('clientModal').style.display = 'flex';
   }
 
@@ -131,12 +158,14 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
 
   // --- Добавление клиента ---
   document.getElementById('addClient').addEventListener('click',()=>{
+    const lang = localStorage.getItem("crmLang") || "ru";
     document.getElementById('clientEditId').value = '';
     document.getElementById('clientNameInput').value = '';
     document.getElementById('clientCompany').value = '';
     document.getElementById('clientContact').value = '';
     document.getElementById('clientStatus').value = 'Лид';
-    document.getElementById('clientModalTitle').textContent = 'Добавить клиента';
+    document.getElementById('clientModalTitle').textContent = translations[lang].addClientModal;
+    updateClientModalLabels(lang);
     document.getElementById('clientModal').style.display = 'flex';
   });
 
@@ -220,11 +249,15 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
     const tbody=document.getElementById('tasksBody');tbody.innerHTML='';
     store.tasks.forEach(t=>{
       const tr=document.createElement('tr');
+      let statusLabel = t.status;
+      if(t.status === 'Запланировано') statusLabel = tr_lang.statusPlanned;
+      else if(t.status === 'В прогрессе') statusLabel = tr_lang.statusInProgress;
+      else if(t.status === 'Завершено') statusLabel = tr_lang.statusCompleted;
       tr.innerHTML=`
   <td>${t.title}</td>
   <td>${t.due}</td>
   <td>${t.assignee}</td>
-  <td>${t.status}</td>
+  <td>${statusLabel}</td>
   <td>
     <button data-id="${t.id}" class="btn ghost editTask">${tr_lang.btnEdit}</button>
     <button data-id="${t.id}" class="btn ghost deleteTask" style="color:#dc2626;">${tr_lang.btnDelete}</button>
@@ -245,7 +278,9 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
         document.getElementById('taskDue').value = task.due;
         populateAssigneeSelect(task.assignee);
         document.getElementById('taskStatusSelect').value = task.status;
-        document.getElementById('taskModalTitle').textContent = 'Редактировать задачу';
+        const lang = localStorage.getItem("crmLang") || "ru";
+        document.getElementById('taskModalTitle').textContent = translations[lang].editTask;
+        updateTaskModalLabels(lang);
         document.getElementById('taskModal').style.display = 'flex';
       });
     });
@@ -261,6 +296,23 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
         }
       });
     });
+  }
+
+  function updateTaskModalLabels(lang) {
+    const t = translations[lang];
+    const modal = document.getElementById('taskModal');
+    const labels = modal.querySelectorAll('label');
+    if(labels[0]) labels[0].textContent = t.taskNameLabel;
+    if(labels[1]) labels[1].textContent = t.dueLabel;
+    if(labels[2]) labels[2].textContent = t.assigneeLabel;
+    if(labels[3]) labels[3].textContent = t.statusLabel;
+    document.getElementById('taskModalSave').textContent = t.save;
+    document.getElementById('taskModalCancel').textContent = t.cancel;
+    // Update status options
+    const statusSelect = document.getElementById('taskStatusSelect');
+    statusSelect.options[0].textContent = t.statusPlanned;
+    statusSelect.options[1].textContent = t.statusInProgress;
+    statusSelect.options[2].textContent = t.statusCompleted;
   }
 
   function populateAssigneeSelect(selectedValue = '') {
@@ -281,7 +333,9 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
     document.getElementById('taskDue').value = new Date().toISOString().slice(0,10);
     populateAssigneeSelect();
     document.getElementById('taskStatusSelect').value = 'Запланировано';
-    document.getElementById('taskModalTitle').textContent = 'Добавить задачу';
+    const lang = localStorage.getItem("crmLang") || "ru";
+    document.getElementById('taskModalTitle').textContent = translations[lang].addTaskModal;
+    updateTaskModalLabels(lang);
     document.getElementById('taskModal').style.display = 'flex';
   });
 
@@ -393,9 +447,32 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
     attachEmployeeButtons();
   }
 
+  function updateEmployeeModalLabels(lang) {
+    const t = translations[lang];
+    const modal = document.getElementById('employeeModal');
+    const labels = modal.querySelectorAll('label');
+    if(labels[0]) labels[0].textContent = t.empName;
+    if(labels[1]) labels[1].textContent = t.empPosition;
+    if(labels[2]) labels[2].textContent = t.empGender;
+    if(labels[3]) labels[3].textContent = t.empPhone;
+    document.getElementById('employeeNameInput').placeholder = t.namePlaceholder;
+    document.getElementById('employeePhone').placeholder = t.phonePlaceholder;
+    document.getElementById('employeeModalSave').textContent = t.save;
+    document.getElementById('employeeModalCancel').textContent = t.cancel;
+    // Position options
+    const posSelect = document.getElementById('employeePosition');
+    posSelect.options[0].textContent = t.positionUser;
+    posSelect.options[1].textContent = t.positionManager;
+    // Gender options
+    const genderSelect = document.getElementById('employeeGender');
+    genderSelect.options[0].textContent = t.genderMale;
+    genderSelect.options[1].textContent = t.genderFemale;
+  }
+
   function attachEmployeeButtons(){
     document.querySelectorAll('.editEmployee').forEach(btn=>{
       btn.addEventListener('click',()=>{
+        const lang = localStorage.getItem("crmLang") || "ru";
         const id = Number(btn.getAttribute('data-id'));
         const emp = store.employees.find(e=>e.id===id);
         document.getElementById('employeeEditId').value = id;
@@ -403,7 +480,8 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
         document.getElementById('employeePosition').value = emp.position || 'user';
         document.getElementById('employeeGender').value = emp.gender || 'male';
         document.getElementById('employeePhone').value = emp.phone;
-        document.getElementById('employeeModalTitle').textContent = 'Редактировать работника';
+        document.getElementById('employeeModalTitle').textContent = translations[lang].editEmployee;
+        updateEmployeeModalLabels(lang);
         document.getElementById('employeeModal').style.display = 'flex';
       });
     });
@@ -421,12 +499,14 @@ function attachClientButtons(){document.querySelectorAll('.viewClient').forEach(
   }
 
   document.getElementById('addEmployee').addEventListener('click',()=>{
+    const lang = localStorage.getItem("crmLang") || "ru";
     document.getElementById('employeeEditId').value = '';
     document.getElementById('employeeNameInput').value = '';
     document.getElementById('employeePosition').value = 'user';
     document.getElementById('employeeGender').value = 'male';
     document.getElementById('employeePhone').value = '';
-    document.getElementById('employeeModalTitle').textContent = 'Добавить работника';
+    document.getElementById('employeeModalTitle').textContent = translations[lang].addEmployeeModal;
+    updateEmployeeModalLabels(lang);
     document.getElementById('employeeModal').style.display = 'flex';
   });
 
@@ -576,6 +656,42 @@ const translations = {
     genderFemale: "Женский",
     positionUser: "Пользователь",
     positionManager: "Менеджер",
+    // Deals
+    stageLeads: "Лиды",
+    stageNegotiation: "Переговоры",
+    stageClosed: "Закрыто",
+    dealName: "Название сделки",
+    dealAmount: "Сумма",
+    addDeal: "Добавить сделку",
+    // Task statuses
+    statusPlanned: "Запланировано",
+    statusInProgress: "В прогрессе",
+    statusCompleted: "Завершено",
+    // Client statuses
+    statusLead: "Лид",
+    statusActive: "Активный",
+    statusInactive: "Неактивный",
+    // Modal labels
+    editTask: "Редактировать задачу",
+    addTaskModal: "Добавить задачу",
+    taskNameLabel: "Название задачи",
+    dueLabel: "Срок",
+    assigneeLabel: "Исполнитель",
+    statusLabel: "Статус",
+    save: "Сохранить",
+    cancel: "Отмена",
+    // Employee modal
+    addEmployeeModal: "Добавить работника",
+    editEmployee: "Редактировать работника",
+    namePlaceholder: "Имя",
+    phonePlaceholder: "Телефон",
+    // Client modal
+    addClientModal: "Добавить клиента",
+    editClient: "Редактировать клиента",
+    clientNameLabel: "Имя клиента",
+    companyLabel: "Компания",
+    contactLabel: "Контакт",
+    contactPlaceholder: "Email или телефон",
   },
   en: {
     dashboard: "🏢 Dashboard",
@@ -623,6 +739,42 @@ const translations = {
     genderFemale: "Female",
     positionUser: "User",
     positionManager: "Manager",
+    // Deals
+    stageLeads: "Leads",
+    stageNegotiation: "Negotiation",
+    stageClosed: "Closed",
+    dealName: "Deal name",
+    dealAmount: "Amount",
+    addDeal: "Add deal",
+    // Task statuses
+    statusPlanned: "Planned",
+    statusInProgress: "In Progress",
+    statusCompleted: "Completed",
+    // Client statuses
+    statusLead: "Lead",
+    statusActive: "Active",
+    statusInactive: "Inactive",
+    // Modal labels
+    editTask: "Edit Task",
+    addTaskModal: "Add Task",
+    taskNameLabel: "Task Name",
+    dueLabel: "Due Date",
+    assigneeLabel: "Assignee",
+    statusLabel: "Status",
+    save: "Save",
+    cancel: "Cancel",
+    // Employee modal
+    addEmployeeModal: "Add Employee",
+    editEmployee: "Edit Employee",
+    namePlaceholder: "Name",
+    phonePlaceholder: "Phone",
+    // Client modal
+    addClientModal: "Add Client",
+    editClient: "Edit Client",
+    clientNameLabel: "Client Name",
+    companyLabel: "Company",
+    contactLabel: "Contact",
+    contactPlaceholder: "Email or phone",
   },
   kz: {
     dashboard: "🏢 Панель",
@@ -670,6 +822,42 @@ const translations = {
     genderFemale: "Әйел",
     positionUser: "Пайдаланушы",
     positionManager: "Менеджер",
+    // Deals
+    stageLeads: "Лидтер",
+    stageNegotiation: "Келіссөздер",
+    stageClosed: "Жабық",
+    dealName: "Келісім атауы",
+    dealAmount: "Сома",
+    addDeal: "Келісім қосу",
+    // Task statuses
+    statusPlanned: "Жоспарланған",
+    statusInProgress: "Орындалуда",
+    statusCompleted: "Аяқталды",
+    // Client statuses
+    statusLead: "Лид",
+    statusActive: "Белсенді",
+    statusInactive: "Белсенді емес",
+    // Modal labels
+    editTask: "Тапсырманы өзгерту",
+    addTaskModal: "Тапсырма қосу",
+    taskNameLabel: "Тапсырма атауы",
+    dueLabel: "Мерзімі",
+    assigneeLabel: "Орындаушы",
+    statusLabel: "Статус",
+    save: "Сақтау",
+    cancel: "Болдырмау",
+    // Employee modal
+    addEmployeeModal: "Қызметкер қосу",
+    editEmployee: "Қызметкерді өзгерту",
+    namePlaceholder: "Аты",
+    phonePlaceholder: "Телефон",
+    // Client modal
+    addClientModal: "Клиент қосу",
+    editClient: "Клиентті өзгерту",
+    clientNameLabel: "Клиент аты",
+    companyLabel: "Компания",
+    contactLabel: "Байланыс",
+    contactPlaceholder: "Email немесе телефон",
   }
 };
 
@@ -716,6 +904,12 @@ function updateLanguage(lang) {
 
   // Deals
   document.querySelector("#page-deals h3").textContent = translations[lang].dealsPipeline;
+  document.querySelector('.stage[data-stage="leads"] h4').textContent = translations[lang].stageLeads;
+  document.querySelector('.stage[data-stage="negotiation"] h4').textContent = translations[lang].stageNegotiation;
+  document.querySelector('.stage[data-stage="closed"] h4').textContent = translations[lang].stageClosed;
+  document.getElementById("dealName").placeholder = translations[lang].dealName;
+  document.getElementById("dealValue").placeholder = translations[lang].dealAmount;
+  document.getElementById("addDeal").textContent = translations[lang].addDeal;
 
   // Reports
   document.querySelector("#page-reports h3").textContent = translations[lang].reports;
